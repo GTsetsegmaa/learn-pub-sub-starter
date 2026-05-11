@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
-	
+
 	"github.com/bootdotdev/learn-pub-sub-starter/internal/gamelogic"
 	"github.com/bootdotdev/learn-pub-sub-starter/internal/pubsub"
 	"github.com/bootdotdev/learn-pub-sub-starter/internal/routing"
@@ -26,15 +26,17 @@ func main() {
 		log.Fatalf("could not create a channel: %v", err)
 	}
 
+	pubsub.DeclareAndBind(conn, routing.ExchangePerilDirect, "game_logs", "game_logs.*", pubsub.SimpleQueueDurable)
+
 	gamelogic.PrintServerHelp()
 
 	for {
-		input := gamelogic.GetInput()
-		if len(input) == 0 {
+		words := gamelogic.GetInput()
+		if len(words) == 0 {
 			continue
 		}
 
-		switch input[0] {
+		switch words[0] {
 		case "pause":
 			fmt.Println("Pausing")
 			pubsub.PublishJSON(ch, routing.ExchangePerilDirect, routing.PauseKey, routing.PlayingState{
@@ -52,6 +54,4 @@ func main() {
 			fmt.Println("Incorrect command unable to process")
 		}
 	}
-
-	fmt.Println("\nShutting down program")
 }
