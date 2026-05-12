@@ -27,9 +27,8 @@ func main() {
 	}
 
 	queueName := routing.PauseKey + "." + username
-	pubsub.DeclareAndBind(conn, routing.ExchangePerilDirect, queueName, routing.PauseKey, pubsub.SimpleQueueTransient)
-
 	gs := gamelogic.NewGameState(username)
+	pubsub.SubscribeJSON(conn, routing.ExchangePerilDirect, queueName, routing.PauseKey, pubsub.SimpleQueueTransient, handlerPause(gs))
 
 	for {
 		words := gamelogic.GetInput()
@@ -62,5 +61,12 @@ func main() {
 		default:
 			fmt.Println("unknown command try again")
 		}
+	}
+}
+
+func handlerPause(gs *gamelogic.GameState) func(routing.PlayingState) {
+	return func(ps routing.PlayingState) {
+		defer fmt.Print("> ")
+		gs.HandlePause(ps)
 	}
 }
