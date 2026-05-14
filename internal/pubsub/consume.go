@@ -69,7 +69,8 @@ func SubscribeJSON[T any](
 	return nil
 }
 
-func DeclareAndBind(conn *amqp.Connection, 
+func DeclareAndBind(
+	conn *amqp.Connection, 
 	exchange, 
 	queueName, 
 	key string, 
@@ -79,14 +80,16 @@ func DeclareAndBind(conn *amqp.Connection,
 	if err != nil {
 		return nil, amqp.Queue{}, fmt.Errorf("could not create channel: %v", err)
 	}
-	
+
 	queue, err := ch.QueueDeclare(
 		queueName, 
 		queueType == SimpleQueueDurable, 
-		queueType == SimpleQueueTransient, 
-		queueType == SimpleQueueTransient, 
+		queueType == SimpleQueueDurable, 
+		queueType == SimpleQueueDurable, 
 		false, 
-		nil,
+		amqp.Table{
+			"x-dead-letter-exchange": "peril_dlx",
+		},
 	)
 	if err != nil {
 		return nil, amqp.Queue{}, fmt.Errorf("could not declare a queue: %v", err)

@@ -15,7 +15,7 @@ func handlerMove(gs *gamelogic.GameState) func(gamelogic.ArmyMove) pubsub.Acktyp
 		switch moveOutcome {
 		case gamelogic.MoveOutcomeSamePlayer:
 			return pubsub.NackDiscard
-		case gamelogic.MoveOutComeSafe:
+		case gamelogic.MoveOutcomeSafe:
 			return pubsub.Ack
 		case gamelogic.MoveOutcomeMakeWar:
 			return pubsub.Ack
