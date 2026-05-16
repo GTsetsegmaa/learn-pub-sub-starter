@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/bootdotdev/learn-pub-sub-starter/internal/gamelogic"
 	"github.com/bootdotdev/learn-pub-sub-starter/internal/pubsub"
@@ -16,19 +17,19 @@ func main() {
 
 	conn, err := amqp.Dial(rabbitConnString)
 	if err != nil {
-		log.Fatal("could not connect to RabbitMQ: ", err)
+		log.Fatalf("could not connect to RabbitMQ: %v", err)
 	}
 	defer conn.Close()
 	fmt.Println("Peril game client connected to RabbitMQ")
 
 	ch, err := conn.Channel()
 	if err != nil {
-		log.Fatal("could not create channel: ", err)
+		log.Fatalf("could not create channel: %v", err)
 	}
 
 	username, err := gamelogic.ClientWelcome()
 	if err != nil {
-		log.Fatal("could not get username: ", err)
+		log.Fatalf("could not get username: %v", err)
 	}
 	gs := gamelogic.NewGameState(username)
 
@@ -41,7 +42,7 @@ func main() {
 		handlerMove(gs, ch),
 	)
 	if err != nil {
-		log.Fatal("could not subscribe to army moves: ", err)
+		log.Fatalf("could not subscribe to army moves: %v", err)
 	}
 	err = pubsub.SubscribeJSON(
 		conn, 
@@ -52,7 +53,7 @@ func main() {
 		handlerPause(gs),
 	)
 	if err != nil {
-		log.Fatal("could not subscribe to pause: ", err)
+		log.Fatalf("could not subscribe to pause: %v", err)
 	}
 	err = pubsub.SubscribeJSON(
 		conn,
@@ -63,7 +64,7 @@ func main() {
 		handlerWar(gs, ch),
 	)
 	if err != nil {
-		log.Fatal("could not subscribe war outcome: ", err)
+		log.Fatalf("could not subscribe war outcome: %v", err)
 	}
 
 	for {
@@ -109,4 +110,18 @@ func main() {
 			fmt.Println("unknown command try again")
 		}
 	}
+}
+
+
+func publishGameLog(ch *amqp.Channel, username, msg string) error {
+	return pubsub.PublishGob(
+		ch,
+		routing.ExchangePerilTopic,
+		routing.GameLogSlug+"."+username,
+		routing.GameLog{
+			CurrentTime: time.Now(),
+			Message:     msg,
+			Username:    username,
+		},
+	)
 }

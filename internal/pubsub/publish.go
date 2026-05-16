@@ -29,9 +29,9 @@ func PublishJSON[T any](ch *amqp.Channel, exchange, key string, val T) error {
 }
 
 func PublishGob[T any](ch *amqp.Channel, exchange, key string, val T) error {
-	var b bytes.Buffer
-	enc := gob.NewEncoder(&b)
-	err := enc.Encode(val)
+	var buffer bytes.Buffer
+	encoder := gob.NewEncoder(&buffer)
+	err := encoder.Encode(val)
 	if err != nil {
 		return err
 	}
@@ -44,7 +44,7 @@ func PublishGob[T any](ch *amqp.Channel, exchange, key string, val T) error {
 		false,
 		amqp.Publishing{
 			ContentType: "application/gob",
-			Body: b.Bytes(),
+			Body: buffer.Bytes(),
 		},
 	)
 }
