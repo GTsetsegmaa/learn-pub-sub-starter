@@ -56,13 +56,13 @@ func SubscribeJSON[T any](
 			switch handler(target) {
 			case Ack:
 				msg.Ack(false)
-				fmt.Println("Ack")
+				fmt.Print("Ack")
 			case NackDiscard:
 				msg.Nack(false, false)
-				fmt.Println("NackDiscard")
+				fmt.Print("NackDiscard")
 			case NackRequeue:
 				msg.Nack(false, true)
-				fmt.Println("NackRequeue")
+				fmt.Print("NackRequeue")
 			}
 		}
 	}()
@@ -84,8 +84,8 @@ func DeclareAndBind(
 	queue, err := ch.QueueDeclare(
 		queueName, 
 		queueType == SimpleQueueDurable, 
-		queueType == SimpleQueueDurable, 
-		queueType == SimpleQueueDurable, 
+		queueType != SimpleQueueDurable, 
+		queueType != SimpleQueueDurable, 
 		false, 
 		amqp.Table{
 			"x-dead-letter-exchange": "peril_dlx",
